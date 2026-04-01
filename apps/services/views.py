@@ -3,7 +3,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from .models import Parent, Transaction
 from rest_framework import viewsets
-from .models import Activity, Event, TeacherProfile, WeeklySlot
+from .models import Activity, Event, TeacherProfile, WeeklySlot,  Parent, Transaction, Student
 from .serializers import (
     ActivitySerializer, EventSerializer, 
     TeacherProfileSerializer, WeeklySlotSerializer
@@ -13,7 +13,7 @@ from .serializers import (
 # Изменять или удалять их можно строго через админку.
 
 class ActivityViewSet(viewsets.ReadOnlyModelViewSet):
-    # queryset - это команда базе данных: "Что именно достать?"
+    # queryset - это команда базе данных: что именно достать?
     # filter(is_active=True) означает, что скрытые кружки на сайт не попадут
     queryset = Activity.objects.filter(is_active=True)
     
@@ -38,33 +38,50 @@ class WeeklySlotViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = WeeklySlotSerializer
 
 class LeadCaptureView(APIView):
-    # Метод POST означает, что мы ждем данные ОТ сайта
     def post(self, request):
-        # Достаем данные, которые прислал фронтенд
-        name = request.data.get('name')
-        phone = request.data.get('phone')
-
-        if not name or not phone:
+        data = request.data
+        
+        # 1. Достаем все данные из запроса фронтенда
+        parent_name = data.get('parent_name')
+        phone = data.get('phone')
+        child_name = data.get('child_name')
+        grade = data.get('grade')
+        dob = data.get('dob') # Может быть пустым
+        comments = data.get('comments', '') # Комментарии и источник
+        
+        # 2. Проверяем обязательные поля 
+        if not parent_name or not phone or not child_name or not grade:
             return Response(
-                {'error': 'Имя и телефон обязательны'}, 
+                {'error': 'ФИО родителя, номер телефона, ФИО и  класс ребенка обязательны!'}, 
                 status=status.HTTP_400_BAD_REQUEST
             )
 
-        # 1. Умный поиск: ищем родителя по номеру телефона. 
-        # Если такого нет - создаем нового. Это спасет базу от дублей!
-        parent, created = Parent.objects.get_or_create(
+        # 3. Ищем или создаем Родителя (защита от дублей по телефону)
+        parent, created_parent = Parent.objects.get_or_create(
             phone=phone,
-            defaults={'full_name': name}
+            defaults={'full_name': parent_name}
         )
 
-        # 2. Создаем новую заявку (Транзакцию) со статусом "Ожидает"
+        # 4. Создаем карточку Ученика и привязываем к Родителю
+        student, created_student = Student.objects.get_or_create(
+            full_name=child_name,
+            parent=parent,
+            defaults={
+                'school_grade': grade,
+                # Если дату не передали, оставляем пустой, чтобы база не ругалась
+                'dob': dob if dob else None 
+            }
+        )
+
+        # 5. Создаем заявку (транзакцию в статусе PENDING)
+        # для бронирования на 15 минут
         Transaction.objects.create(
             parent=parent,
-            amount=0, # Сумму Надежда обсудит по телефону
+            amount=0,
             status='PENDING'
         )
 
         return Response(
-            {'message': 'Ура! Заявка успешно принята!'}, 
+            {'message': 'Ура! Заявка с полными данными успешно принята!'}, 
             status=status.HTTP_201_CREATED
-        )    
+        )

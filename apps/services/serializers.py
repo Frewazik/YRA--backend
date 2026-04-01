@@ -5,9 +5,9 @@ from .models import Activity, Event, TeacherProfile, WeeklySlot
 class ActivitySerializer(serializers.ModelSerializer):
     class Meta:
         model = Activity
-        fields = '__all__' # Команда: "Отдай фронтенду все поля из базы"
+        fields = '__all__' # Команда: Отдай фронту все поля из базы
 
-# 2. Сериализатор для Афиши (Мероприятий)
+# 2. Сериализатор для Афиши 
 class EventSerializer(serializers.ModelSerializer):
     class Meta:
         model = Event

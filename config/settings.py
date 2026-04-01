@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'apps.services',
+    'drf_spectacular',
     #'apps.users',
     'corsheaders',
 ]
@@ -131,4 +132,15 @@ MEDIA_URL = '/media/'
 import os
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
-CORS_ALLOW_ALL_ORIGINS = True  # Разрешаем запросы с любого сайта (для разработки)
+CORS_ALLOW_ALL_ORIGINS = True  # Разрешаем запросы с любого сайта
+
+REST_FRAMEWORK = {
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
+}
+
+SPECTACULAR_SETTINGS = {
+    'TITLE': 'API Умного центра',
+    'DESCRIPTION': 'Документация центра для фронтенда ',
+    'VERSION': '1.0.0',
+    'SERVE_INCLUDE_SCHEMA': False,
+}

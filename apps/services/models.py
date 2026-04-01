@@ -26,7 +26,7 @@ class TeacherProfile(models.Model):
     class Meta:
         # имя таблицы для админки
         verbose_name = "Профиль учителя"
-        verbose_name_plural = "Команда (Учителя)"
+        verbose_name_plural = "Учителя"
         # правило сортировки
         ordering = ['display_order']
     # как назвать, то что выводиться в таблицу        
@@ -43,8 +43,8 @@ class Parent(models.Model):
     comments = models.TextField("Комментарии / Вопросы с сайта", blank=True)
 
     class Meta:
-        verbose_name = "Родитель (Клиент)"
-        verbose_name_plural = "Родители (Клиенты)"
+        verbose_name = "Родитель"
+        verbose_name_plural = "Родители"
 
     def __str__(self):
         return f"{self.full_name} ({self.phone})"
@@ -84,11 +84,10 @@ class Student(models.Model):
 #  ПРОДУКТЫ И УСЛУГИ 
 
 class Activity(models.Model): 
-    # Слева (например, 'CLUB') - то, что хранится в базе данных (коротко и по-английски).
-    # Справа ('Кружок') - то, что увидит Надежда в интерфейсе.
+    # 'CLUB' - то, что хранится в бд
+    # 'Кружок' - то, что видно в админке.
     CATEGORY_CHOICES = [
         ('CLUB', 'Кружок'), 
-        ('PROGRAM', 'Продленка/Программа'),
         ('SERVICE', 'Услуга') 
     ]
     
@@ -111,6 +110,8 @@ class Activity(models.Model):
     
     # Переключатель (вкл/выкл), если уберет галочку, кружок пропадет с сайта,но в базе вся история останется.
     is_active = models.BooleanField("Активен на сайте", default=True)
+
+    is_featured = models.BooleanField("Вывести на главную страницу", default=False)
 
     class Meta:
         verbose_name = "Направление (Кружок/Услуга)"
@@ -135,7 +136,7 @@ class WeeklySlot(models.Model):
         verbose_name="Направление"
     )
     
-    # Привязка к учителю. Если учитель уволится (удалится), 
+    # Привязка к учителю. Если учитель удалится, 
     # слот расписания останется, просто поле "Учитель" станет пустым.
     teacher = models.ForeignKey(
         TeacherProfile, 
@@ -153,7 +154,7 @@ class WeeklySlot(models.Model):
     group_name = models.CharField("Название группы", max_length=50, blank=True)
     
     # Лимит мест в группе. Защита от переполнения.
-    max_capacity = models.PositiveIntegerField("Вместимость", default=10)
+    max_capacity = models.PositiveIntegerField("Колличество мест", default=10)
 
     class Meta:
         verbose_name = "Слот расписания"
@@ -203,7 +204,7 @@ class ScheduleException(models.Model):
             return f"Перенос: {self.slot.activity.name} ({self.date}) на {self.new_start_time.strftime('%H:%M')}"
         return f"Отмена: {self.slot.activity.name} ({self.date})"
 
-# --- ЖУРНАЛ И ЗАПИСЬ ---
+#  ЖУРНАЛ И ЗАПИСЬ 
 
 class Enrollment(models.Model):
     # Привязка к ребенку
@@ -255,7 +256,7 @@ class Attendance(models.Model):
         verbose_name="Ученик"
     )
     
-    # Почему SET_NULL? Если удалить урок из расписания, то не удалиться 
+    # SET_NULL - если удалить урок из расписания, то не удалиться 
     # историю того, что ребенок туда ходил (это нужно для финансов).
     slot = models.ForeignKey(
         WeeklySlot, 
@@ -269,7 +270,7 @@ class Attendance(models.Model):
 
     class Meta:
         verbose_name = "Отметка посещаемости"
-        verbose_name_plural = "Журнал (Посещаемости)"
+        verbose_name_plural = "Журнал"
         # ЗАЩИТА ОТ ДУБЛЕЙ: Нельзя поставить Саше Иванову две разные отметки 
         # за один и тот же урок в одну и ту же дату.
         unique_together = ('student', 'slot', 'date')
@@ -277,7 +278,7 @@ class Attendance(models.Model):
     def __str__(self):
         return f"{self.student.full_name} - {self.date} ({self.get_status_display()})"
 
-# --- ФИНАНСЫ (ТАРИФЫ И АБОНЕМЕНТЫ) ---
+#  ФИНАНСЫ (ТАРИФЫ И АБОНЕМЕНТЫ) 
 
 class SubscriptionPlan(models.Model):
     name = models.CharField("Название тарифа", max_length=100)
@@ -297,8 +298,8 @@ class SubscriptionPlan(models.Model):
     )
 
     class Meta:
-        verbose_name = "Тариф (Шаблон)"
-        verbose_name_plural = "Тарифы (Шаблоны)"
+        verbose_name = "Тариф"
+        verbose_name_plural = "Тарифы"
         ordering = ['activity', 'price'] # Группируем по кружкам и цене
 
     def __str__(self):
@@ -313,8 +314,8 @@ class Subscription(models.Model):
         related_name='subscriptions',
         verbose_name="Ученик"
     )
-    # Если попытаемся удалить тариф "8 занятий", а у Васи он сейчас активен, 
-    # база данных ВЫДАСТ ОШИБКУ и не даст этого сделать. Это спасет бизнес от краха базы!
+    # Если попытаемся удалить тариф "8 занятий", а у ученика он сейчас активен, 
+    # база данных ВЫДАСТ ОШИБКУ и не даст этого сделать. 
     plan = models.ForeignKey(
         SubscriptionPlan, 
         on_delete=models.PROTECT,
@@ -324,7 +325,7 @@ class Subscription(models.Model):
     # Срок действия абонемента.
     start_date = models.DateField("Дата начала")
     end_date = models.DateField("Дата окончания")
-    # Текущий остаток занятий. Будет уменьшаться, когда учитель ставит "Был" в журнале.
+    # Текущий остаток занятий. Будет уменьшаться, когда учитель отмечает присутствие в журнале.
     remaining_sessions = models.PositiveIntegerField("Осталось занятий")
     # Галочка активности (чтобы в админке легко фильтровать "Активные" и "Завершенные").
     is_active = models.BooleanField("Активен", default=True)
@@ -345,7 +346,7 @@ class Subscription(models.Model):
         # Покажет: "Иванов Саша - Английский (Осталось: 3)"
         return f"{self.student.full_name} - {self.plan.name} (Остаток: {self.remaining_sessions})"
 
-# --- ФИНАНСЫ (ТРАНЗАКЦИИ / ЗАЯВКИ С САЙТА) ---
+#  ФИНАНСЫ (ТРАНЗАКЦИИ / ЗАЯВКИ С САЙТА) 
 
 class Transaction(models.Model):
     comment = models.TextField("Комментарий (и откуда узнали)", blank=True, null=True)
@@ -358,10 +359,10 @@ class Transaction(models.Model):
     # on_delete=models.SET_NULL: Если карточку родителя удалят, транзакция не удалится.
     # Поле parent просто станет пустым (null), чтобы не ломать финансовую статистику.
     parent = models.ForeignKey(
-        'Parent', # Название модели в кавычках, на случай если она написана ниже в коде
+        'Parent', # Название модели в кавычках, чтобы вызвать ниже в коде
         on_delete=models.SET_NULL, 
         null=True,
-        verbose_name="Родитель (Плательщик)"
+        verbose_name="Родитель"
     )
     
     student = models.ForeignKey(
@@ -385,8 +386,8 @@ class Transaction(models.Model):
     status = models.CharField("Статус", max_length=20, choices=STATUS_CHOICES, default='PENDING')
 
     class Meta:
-        verbose_name = "Заявка на оплату (Транзакция)"
-        verbose_name_plural = "Заявки на оплату (Транзакции)"
+        verbose_name = "Заявка на оплату"
+        verbose_name_plural = "Заявки на оплату"
         # Сортировка по убыванию времени: новые заявки будут сверху списка
         ordering = ['-created_at'] 
 
@@ -400,7 +401,7 @@ class Event(models.Model):
     title = models.CharField("Название события", max_length=150)
     date_time = models.DateTimeField("Дата и время начала")
     price = models.DecimalField("Цена билета", max_digits=8, decimal_places=2)
-    image = models.ImageField("Обложка (Афиша)", upload_to='events/')
+    image = models.ImageField("Обложка", upload_to='events/')
     description = models.TextField("Описание", blank=True)
     is_active = models.BooleanField("Показывать на сайте", default=True)
 
