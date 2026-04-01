@@ -3,10 +3,11 @@ from rest_framework.response import Response
 from rest_framework import status
 from .models import Parent, Transaction
 from rest_framework import viewsets
-from .models import Activity, Event, TeacherProfile, WeeklySlot,  Parent, Transaction, Student
+from .models import Activity, Event, TeacherProfile, WeeklySlot,  Parent, Transaction, Student, GalleryPhoto
 from .serializers import (
     ActivitySerializer, EventSerializer, 
-    TeacherProfileSerializer, WeeklySlotSerializer
+    TeacherProfileSerializer, WeeklySlotSerializer,
+    GalleryPhotoSerializer, ActivityShortSerializer
 )
 
 # Используем ReadOnlyModelViewSet. Она означает, что сайт сможет ТОЛЬКО ЧИТАТЬ список кружков. 
@@ -20,6 +21,20 @@ class ActivityViewSet(viewsets.ReadOnlyModelViewSet):
     # serializer_class - указываем, сериализатор использовать
     serializer_class = ActivitySerializer
 
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        # Если в ссылке есть ?featured=true, фильтруем и ограничиваем до 4 штук
+        is_featured = self.request.query_params.get('featured')
+        if is_featured == 'true':
+            return queryset.filter(is_featured=True)[:4] 
+        return queryset
+
+    def get_serializer_class(self):
+        # Если просят только избранные 
+        if self.request.query_params.get('featured') == 'true':
+            return ActivityShortSerializer
+        # В остальных случаях — полный
+        return ActivitySerializer
 
 class EventViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Event.objects.filter(is_active=True)
@@ -85,3 +100,7 @@ class LeadCaptureView(APIView):
             {'message': 'Ура! Заявка с полными данными успешно принята!'}, 
             status=status.HTTP_201_CREATED
         )
+    
+class GalleryPhotoViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset = GalleryPhoto.objects.all()
+    serializer_class = GalleryPhotoSerializer    

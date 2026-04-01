@@ -2,7 +2,8 @@ from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 from .views import (
     ActivityViewSet, EventViewSet, 
-    TeacherProfileViewSet, WeeklySlotViewSet, LeadCaptureView
+    TeacherProfileViewSet, WeeklySlotViewSet, 
+    LeadCaptureView, GalleryPhotoViewSet
 )
 
 # Создаем роутер (автоматический генератор ссылок)
@@ -14,6 +15,7 @@ router.register(r'activities', ActivityViewSet)
 router.register(r'events', EventViewSet)
 router.register(r'teachers', TeacherProfileViewSet)
 router.register(r'schedule', WeeklySlotViewSet)
+router.register(r'gallery', GalleryPhotoViewSet, basename='gallery')
 
 # Собираем все сгенерированные ссылки в один список
 urlpatterns = [

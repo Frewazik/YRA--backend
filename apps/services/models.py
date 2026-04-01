@@ -64,7 +64,7 @@ class Student(models.Model):
     # Класс в школе (от 1 до 11). null=True - в БД может быть пустота, если пока не знаем
     school_grade = models.CharField("Класс", max_length=20, blank=True)
 
-    # null=True: Разрешает самой базе данных (PostgreSQL) хранить пустоту (NULL). 
+    # null=True: Разрешает самой базе данных хранить пустоту (NULL). 
     # В отличие от текста, дата не может быть "пустой строкой", она либо есть, либо NULL.
     # db_index=True: Создает внутренний справочник в БД. Позволяет мгновенно находить детей нужного возраста.
     dob = models.DateField("Дата рождения", blank=True, null=True, db_index=True)
@@ -72,7 +72,6 @@ class Student(models.Model):
     health_issues = models.TextField("Особенности здоровья", blank=True)
 
     class Meta:
-        # Как называть одну запись в админке (Например: "Добавить ученика")
         verbose_name = "Ученик"
         # Как называть раздел в админке в целом
         verbose_name_plural = "Ученики"
@@ -108,6 +107,8 @@ class Activity(models.Model):
     # Порядок вывода на сайте (кто выше, кто ниже). Начинаем с 1.
     order = models.PositiveIntegerField("Сортировка", default=1)
     
+    price = models.IntegerField("Цена абонемента", default=0)
+
     # Переключатель (вкл/выкл), если уберет галочку, кружок пропадет с сайта,но в базе вся история останется.
     is_active = models.BooleanField("Активен на сайте", default=True)
 
@@ -400,7 +401,7 @@ class Transaction(models.Model):
 class Event(models.Model):
     title = models.CharField("Название события", max_length=150)
     date_time = models.DateTimeField("Дата и время начала")
-    price = models.DecimalField("Цена билета", max_digits=8, decimal_places=2)
+    price = models.IntegerField("Цена билета", default=0)
     image = models.ImageField("Обложка", upload_to='events/')
     description = models.TextField("Описание", blank=True)
     is_active = models.BooleanField("Показывать на сайте", default=True)
@@ -412,3 +413,15 @@ class Event(models.Model):
 
     def __str__(self):
         return f"{self.title} - {self.date_time.strftime('%d.%m.%Y %H:%M')}"
+    
+class GalleryPhoto(models.Model):
+    image = models.ImageField("Фотография", upload_to='gallery/')
+    alt = models.CharField("Описание", max_length=255, blank=True, help_text="Текст для слепых и SEO")
+    
+    class Meta:
+        verbose_name = "Фото галереи"
+        verbose_name_plural = "Галерея"
+
+    def __str__(self):
+        return f"Фото {self.id} - {self.alt[:20]}"
+
