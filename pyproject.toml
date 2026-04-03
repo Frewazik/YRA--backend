@@ -1,0 +1,14 @@
+[tool.ruff]
+# Исключаем системные папки
+exclude = [
+    ".venv",
+    "venv",
+    "migrations",
+    "__pycache__",
+]
+# Максимальная длина строки
+line-length = 120
+
+[tool.ruff.lint]
+# Включаем базовые проверки (E, F) и проверки импортов (I)
+select = ["E", "F", "I"]
