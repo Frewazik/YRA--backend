@@ -1,3 +1,54 @@
+[project]
+name = "children-center"
+version = "0.1.0"
+description = "Backend for Children Center 'Street of Joy'"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "asgiref==3.11.0",
+    "attrs==26.1.0",
+    "cfgv==3.5.0",
+    "distlib==0.4.0",
+    "django==6.0.1",
+    "django-cors-headers==4.9.0",
+    "django-environ==0.13.0",
+    "django-stubs==6.0.2",
+    "django-stubs-ext==6.0.2",
+    "djangorestframework==3.16.1",
+    "djangorestframework-stubs==3.16.9",
+    "drf-spectacular==0.29.0",
+    "filelock==3.25.2",
+    "identify==2.6.18",
+    "inflection==0.5.1",
+    "jsonschema==4.26.0",
+    "jsonschema-specifications==2025.9.1",
+    "librt==0.8.1",
+    "mypy==1.20.0",
+    "mypy-extensions==1.1.0",
+    "nodeenv==1.10.0",
+    "pathspec==1.0.4",
+    "pillow==12.1.1",
+    "platformdirs==4.9.4",
+    "pre-commit==4.5.1",
+    "psycopg-binary==3.3.2",
+    "psycopg2-binary==2.9.11",
+    "python-discovery==1.2.1",
+    "python-dotenv==1.2.1",
+    "pyyaml==6.0.3",
+    "referencing==0.37.0",
+    "rpds-py==0.30.0",
+    "ruff==0.15.9",
+    "sqlparse==0.5.5",
+    "types-pyyaml==6.0.12.20250915",
+    "typing-extensions==4.15.0",
+    "tzdata==2025.3",
+    "uritemplate==4.2.0",
+    "virtualenv==21.2.0",
+]
+
+[tool.uv]
+package = false
+
 [tool.ruff]
 # Исключаем системные папки
 exclude = [
@@ -12,3 +63,13 @@ line-length = 120
 [tool.ruff.lint]
 # Включаем базовые проверки (E, F) и проверки импортов (I)
 select = ["E", "F", "I"]
+
+[tool.mypy]
+plugins = ["mypy_django_plugin.main", "mypy_drf_plugin.main"]
+# Игнорируем библиотеки у которых нет своих тайп-хинтов
+ignore_missing_imports = true
+disallow_untyped_defs = true
+disable_error_code = ["var-annotated"]
+
+[tool.django-stubs]
+django_settings_module = "config.settings"

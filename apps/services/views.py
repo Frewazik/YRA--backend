@@ -1,4 +1,6 @@
+from django.db.models import QuerySet
 from rest_framework import status, viewsets
+from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -33,7 +35,7 @@ class ActivityViewSet(viewsets.ReadOnlyModelViewSet):
     # serializer_class - указываем, сериализатор использовать
     serializer_class = ActivitySerializer
 
-    def get_queryset(self):
+    def get_queryset(self) -> QuerySet:
         queryset = super().get_queryset()
         # Если в ссылке есть ?featured=true, фильтруем и ограничиваем до 4 штук
         is_featured = self.request.query_params.get("featured")
@@ -41,7 +43,7 @@ class ActivityViewSet(viewsets.ReadOnlyModelViewSet):
             return queryset.filter(is_featured=True)[:4]
         return queryset
 
-    def get_serializer_class(self):
+    def get_serializer_class(self) -> type:
         # Если просят только избранные
         if self.request.query_params.get("featured") == "true":
             return ActivityShortSerializer
@@ -67,7 +69,7 @@ class WeeklySlotViewSet(viewsets.ReadOnlyModelViewSet):
 
 
 class LeadCaptureView(APIView):
-    def post(self, request):
+    def post(self, request: Request) -> Response:
         data = request.data
 
         # 1. Достаем все данные из запроса фронтенда

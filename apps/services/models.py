@@ -3,7 +3,7 @@ from django.db import models
 from django.db.models import CheckConstraint, Q
 from django.utils import timezone
 
-# --- ЛЮДИ ---
+# ЛЮДИ
 
 
 class TeacherProfile(models.Model):
@@ -35,7 +35,7 @@ class TeacherProfile(models.Model):
         ordering = ["display_order"]
 
     # как назвать, то что выводиться в таблицу
-    def __str__(self):
+    def __str__(self) -> str:
         return f"{self.user.last_name} {self.user.first_name} {self.middle_name}"
 
 
@@ -53,7 +53,7 @@ class Parent(models.Model):
         verbose_name = "Родитель"
         verbose_name_plural = "Родители"
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f"{self.full_name} ({self.phone})"
 
 
@@ -83,7 +83,7 @@ class Student(models.Model):
         # Как называть раздел в админке в целом
         verbose_name_plural = "Ученики"
 
-    def __str__(self):
+    def __str__(self) -> str:
         # Если этого не написать, в списке учеников будут безликие "Student object (1)
         return self.full_name
 
@@ -126,7 +126,7 @@ class Activity(models.Model):
         # Автоматическая сортировка в админке по нашему полю order
         ordering = ["order"]
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f"{self.name} ({self.get_category_display()})"
 
 
@@ -175,7 +175,7 @@ class WeeklySlot(models.Model):
         # Добавим сортировку, чтобы в админке слоты шли по порядку дней и времени
         ordering = ["day_of_week", "start_time"]
 
-    def __str__(self):
+    def __str__(self) -> str:
         # get_day_of_week_display() превратит цифру 0 в слово "Понедельник"
         # strftime('%H:%M') отформатирует время, убрав лишние секунды (15:00 вместо 15:00:00)
         day = self.get_day_of_week_display()
@@ -209,10 +209,11 @@ class ScheduleException(models.Model):
         # Сначала показываем самые свежие изменения
         ordering = ["-date"]
 
-    def __str__(self):
+    def __str__(self) -> str:
         # Если это перенос, добавим в название новое время
         if self.type == "RESCHEDULE":
-            return f"Перенос: {self.slot.activity.name} ({self.date}) на {self.new_start_time.strftime('%H:%M')}"
+            time_str = self.new_start_time.strftime("%H:%M") if self.new_start_time else "неизвестное время"
+            return f"Перенос: {self.slot.activity.name} ({self.date}) на {time_str}"
         return f"Отмена: {self.slot.activity.name} ({self.date})"
 
 
@@ -249,7 +250,7 @@ class Enrollment(models.Model):
         # ЗАЩИТА: База выдаст ошибку, если мы попытаемся дважды записать Сашу Иванова в одну и ту же группу.
         unique_together = ("student", "slot")
 
-    def __str__(self):
+    def __str__(self) -> str:
         # Покажет в админке: "Иванов Саша -> Английский — Понедельник в 15:00"
         return f"{self.student.full_name} -> {self.slot}"
 
@@ -283,7 +284,7 @@ class Attendance(models.Model):
         # за один и тот же урок в одну и ту же дату.
         unique_together = ("student", "slot", "date")
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f"{self.student.full_name} - {self.date} ({self.get_status_display()})"
 
 
@@ -312,7 +313,7 @@ class SubscriptionPlan(models.Model):
         verbose_name_plural = "Тарифы"
         ordering = ["activity", "price"]  # Группируем по кружкам и цене
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f"{self.name} ({self.price} руб.)"
 
 
@@ -348,7 +349,7 @@ class Subscription(models.Model):
             )
         ]
 
-    def __str__(self):
+    def __str__(self) -> str:
         # Покажет: "Иванов Саша - Английский (Осталось: 3)"
         return f"{self.student.full_name} - {self.plan.name} (Остаток: {self.remaining_sessions})"
 
@@ -389,7 +390,7 @@ class Transaction(models.Model):
         # Сортировка по убыванию времени: новые заявки будут сверху списка
         ordering = ["-created_at"]
 
-    def __str__(self):
+    def __str__(self) -> str:
         # Если родителя удалили (parent = None), чтобы сервер не упал с ошибкой, пишем "Удаленный клиент"
         parent_name = self.parent.full_name if self.parent else "Удаленный клиент"
         return f"Заявка #{self.id} - {parent_name} ({self.get_status_display()})"
@@ -410,7 +411,7 @@ class Event(models.Model):
         verbose_name_plural = "Афиша (События)"
         ordering = ["-date_time"]
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f"{self.title} - {self.date_time.strftime('%d.%m.%Y %H:%M')}"
 
 
@@ -422,5 +423,5 @@ class GalleryPhoto(models.Model):
         verbose_name = "Фото галереи"
         verbose_name_plural = "Галерея"
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f"Фото {self.id} - {self.alt[:20]}"

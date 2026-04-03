@@ -22,7 +22,7 @@ class EventSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
     @extend_schema_field(OpenApiTypes.INT)
-    def get_price(self, obj):
+    def get_price(self, obj: Event) -> int:
         if obj.price:
             return int(obj.price * 100)  # Переводим рубли в копейки для фронта
         return 0
@@ -51,7 +51,7 @@ class WeeklySlotSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
     @extend_schema_field(OpenApiTypes.INT)
-    def get_spots_available(self, obj):
+    def get_spots_available(self, obj: WeeklySlot) -> int:
         # TODO: Заменить на реальный подсчет, когда сделаем систему бронирования
         # Пока отдаем максимум мест, чтобы API не падало с ошибкой
         return obj.max_capacity

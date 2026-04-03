@@ -1,7 +1,10 @@
+from typing import Any
+
+from rest_framework.response import Response
 from rest_framework.views import exception_handler
 
 
-def strict_exception_handler(exc, context):
+def strict_exception_handler(exc: Exception, context: dict[str, Any]) -> Response | None:
     # сначала вызовем стандартный обработчик DRF, чтобы он сам посчитал
     response = exception_handler(exc, context)
 
@@ -10,7 +13,7 @@ def strict_exception_handler(exc, context):
         if response.status_code == 400:
             error_code = "validation_failed"
         elif response.status_code == 401:
-            error_code - "unauthorized"
+            error_code = "unauthorized"
         elif response.status_code == 403:
             error_code = "permission_denied"
         elif response.status_code == 404:
