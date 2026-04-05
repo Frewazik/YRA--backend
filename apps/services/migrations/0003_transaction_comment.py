@@ -4,15 +4,16 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('services', '0002_event'),
+        ("services", "0002_event"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='transaction',
-            name='comment',
-            field=models.TextField(blank=True, null=True, verbose_name='Комментарий (и откуда узнали)'),
+            model_name="transaction",
+            name="comment",
+            field=models.TextField(
+                blank=True, null=True, verbose_name="Комментарий (и откуда узнали)"
+            ),
         ),
     ]

@@ -1,0 +1,19 @@
+repos:
+
+  # Стандартные хуки (убирают пробелы и пустые строки в конце файлов)
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.5.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml
+
+  # Подключаем RUFF
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.3.5
+    hooks:
+      # Запуск проверки ошибок
+      - id: ruff
+        args: [--fix]
+      # Запуск aвтоформатирования кода
+      - id: ruff-format

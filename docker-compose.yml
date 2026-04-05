@@ -1,0 +1,32 @@
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: YRA_postgres
+    restart: always
+    environment:
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  backend:
+    build: .
+    container_name: YRA_backend
+    restart: always
+    env_file:
+      - .env
+    ports:
+      - "8000:8000"
+    # когда меняешь файды на windows, то они и в docker мееяются
+    volumes:
+      - .:/app
+    # бэк ждет запуска бд
+    depends_on:
+      - db
+
+
+volumes:
+  postgres_data:
